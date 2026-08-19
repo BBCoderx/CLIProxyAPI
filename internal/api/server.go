@@ -265,6 +265,18 @@ func (s *Server) Start() error {
 	}
 
 	addr := s.server.Addr
+	// Vercel Go Runtime provides a dynamic listening port.
+    if port := strings.TrimSpace(os.Getenv("PORT")); port != "" {
+        host := ""
+        if s.cfg != nil {
+            host = s.cfg.Host
+        }
+
+        addr = net.JoinHostPort(host, port)
+        s.server.Addr = addr
+
+        log.Infof("runtime PORT detected, listening on %s", addr)
+    }
 	listener, errListen := net.Listen("tcp", addr)
 	if errListen != nil {
 		return fmt.Errorf("failed to start HTTP server: %v", errListen)
